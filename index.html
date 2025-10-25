@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPCounter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .person-item {
+            background: linear-gradient(135deg, #f5f7ff 0%, #f0f4ff 100%);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: box-shadow 0.3s;
+        }
+
+        .person-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .person-info h3 {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .person-info p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .person-age {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #ff3838;
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 1.05rem;
+        }
+
+        .count-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .people-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .people-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .people-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .people-list::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NPCounter</h1>
+            <p class="subtitle">Track people and their birth dates</p>
+        </header>
+
+        <div class="card">
+            <h2>Add New Person</h2>
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <input 
+                    type="text" 
+                    id="fullName" 
+                    placeholder="Enter full name"
+                >
+            </div>
+            <div class="form-group">
+                <label for="birthDate">Birth Date</label>
+                <input 
+                    type="date" 
+                    id="birthDate"
+                >
+            </div>
+            <button onclick="addPerson()">Add Person</button>
+        </div>
+
+        <div class="card">
+            <h2>People <span class="count-badge" id="peopleCount">0</span></h2>
+            <div class="people-list" id="peopleList">
+                <div class="empty-state">No people added yet. Add one to get started!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'npcounter_people';
+
+        function loadPeople() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function savePeople(people) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(people));
+        }
+
+        function calculateAge(birthDate) {
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function formatDate(dateStr) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateStr).toLocaleDateString('en-US', options);
+        }
+
+        function addPerson() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const birthDate = document.getElementById('birthDate').value;
+
+            if (!fullName || !birthDate) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const people = loadPeople();
+            const newPerson = {
+                id: Date.now(),
+                fullName: fullName,
+                birthDate: birthDate
+            };
+
+            people.push(newPerson);
+            savePeople(people);
+
+            document.getElementById('fullName').value = '';
+            document.getElementById('birthDate').value = '';
+
+            renderPeople();
+        }
+
+        function deletePerson(id) {
+            let people = loadPeople();
+            people = people.filter(person => person.id !== id);
+            savePeople(people);
+            renderPeople();
+        }
+
+        function renderPeople() {
+            const people = loadPeople();
+            const peopleList = document.getElementById('peopleList');
+            const count = document.getElementById('peopleCount');
+
+            count.textContent = people.length;
+
+            if (people.length === 0) {
+                peopleList.innerHTML = '<div class="empty-state">No people added yet. Add one to get started!</div>';
+                return;
+            }
+
+            peopleList.innerHTML = people.map(person => `
+                <div class="person-item">
+                    <div class="person-info">
+                        <h3>${person.fullName}</h3>
+                        <p>Birth Date: ${formatDate(person.birthDate)}</p>
+                        <p class="person-age">Age: ${calculateAge(person.birthDate)} years old</p>
+                    </div>
+                    <button class="delete-btn" onclick="deletePerson(${person.id})">×</button>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('fullName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addPerson();
+        });
+
+        document.getElementById('birthDate').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addPerson();
+        });
+
+        // Load people on page load
+        renderPeople();
+    </script>
+</body>
+</html>
